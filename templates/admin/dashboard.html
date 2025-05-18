@@ -1,0 +1,183 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+<style>
+    .dashboard-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        padding: 20px;
+    }
+    
+    .card h3 {
+        margin-top: 0;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+    }
+    
+    .stat-value {
+        font-size: 2em;
+        font-weight: bold;
+        color: #417690;
+    }
+    
+    .stat-label {
+        color: #777;
+    }
+    
+    .recent-items {
+        margin-top: 15px;
+    }
+    
+    .recent-item {
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .chart-container {
+        grid-column: span 2;
+        height: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Tableau de bord Fox 🦊</h1>
+
+<div class="dashboard-container">
+    <!-- Statistiques -->
+    <div class="card">
+        <h3>Statistiques générales</h3>
+        <div class="stats-grid">
+            <div class="stat">
+                <div class="stat-value">{{ stats.total_visitors }}</div>
+                <div class="stat-label">Visiteurs</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{{ stats.total_posts }}</div>
+                <div class="stat-label">Articles</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{{ stats.total_projects }}</div>
+                <div class="stat-label">Projets</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{{ stats.total_comments }}</div>
+                <div class="stat-label">Commentaires</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{{ stats.total_messages }}</div>
+                <div class="stat-label">Messages</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Visiteurs récents -->
+    <div class="card">
+        <h3>Visiteurs récents</h3>
+        <div class="recent-items">
+            {% for visitor in stats.recent_visitors %}
+            <div class="recent-item">
+                <strong>{{ visitor.email }}</strong>
+                {% if visitor.nom %} ({{ visitor.nom }}){% endif %}
+                <div class="item-meta">
+                    Inscrit le: {% if visitor.date_inscription %}{{ visitor.date_inscription|date:"d/m/Y" }}{% else %}Non disponible{% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <p>Aucun visiteur récent.</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Commentaires récents -->
+    <div class="card">
+        <h3>Commentaires récents</h3>
+        <div class="recent-items">
+            {% for comment in stats.recent_comments %}
+            <div class="recent-item">
+                <strong>{{ comment.visiteur.email }}</strong> sur "{{ comment.post.titre }}"
+                <div class="item-meta">
+                    {{ comment.date|date:"d/m/Y H:i" }} - {{ comment.contenu|truncatechars:50 }}
+                </div>
+            </div>
+            {% empty %}
+            <p>Aucun commentaire récent.</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Messages récents -->
+    <div class="card">
+        <h3>Messages récents</h3>
+        <div class="recent-items">
+            {% for message in stats.recent_messages %}
+            <div class="recent-item">
+                <strong>{{ message.visiteur.email }}</strong>
+                <div class="item-meta">
+                    Objet: {{ message.objet|default:"(Sans objet)" }}
+                    <br>
+                    {{ message.contenu|truncatechars:50 }}
+                </div>
+            </div>
+            {% empty %}
+            <p>Aucun message récent.</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Graphique (placeholder) -->
+    <div class="card chart-container">
+        <h3>Activité du site (derniers 12 mois)</h3>
+        <canvas id="activityChart"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Récupération des données pour le graphique
+        fetch('/admin/api/visitors-stats/')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('activityChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Visiteurs',
+                            data: data.visitors,
+                            borderColor: '#417690',
+                            backgroundColor: 'rgba(65, 118, 144, 0.1)',
+                            tension: 0.3
+                        }, {
+                            label: 'Commentaires',
+                            data: data.comments,
+                            borderColor: '#79AEC8',
+                            backgroundColor: 'rgba(121, 174, 200, 0.1)',
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+    });
+</script>
+{% endblock %}

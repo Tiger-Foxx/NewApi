@@ -63,9 +63,11 @@ class Post(models.Model):
     class Meta:
         db_table = 'FoxApp_post'
 
+
 class Visiteur(models.Model):
     email = models.EmailField(unique=True)
     nom = models.CharField(max_length=100, blank=True, null=True)
+    date_inscription = models.DateTimeField(auto_now_add=True, null=True)
     
     def __str__(self):
         return f"VISITEUR | {self.email}"
@@ -96,6 +98,8 @@ class Message(models.Model):
     class Meta:
         db_table = 'FoxApp_message'
 
+
+# Idem pour les autres modèles, par exemple pour Annonce:
 class Annonce(models.Model):
     date = models.DateField(auto_now_add=True)
     contenuP1 = models.TextField(blank=True, null=True)

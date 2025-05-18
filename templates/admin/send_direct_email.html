@@ -1,0 +1,55 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrahead %}
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    tinymce.init({
+      selector: '#id_message',
+      plugins: 'link image lists table code help wordcount',
+      toolbar: 'undo redo | styles | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | table | code',
+      height: 400
+    });
+  });
+</script>
+{% endblock %}
+
+{% block content %}
+<div>
+    <h1>{{ title }}</h1>
+    
+    <div class="module">
+        <h2>Informations sur le destinataire</h2>
+        <p><strong>Email:</strong> {{ visiteur.email }}</p>
+        {% if visiteur.nom %}
+        <p><strong>Nom:</strong> {{ visiteur.nom }}</p>
+        {% endif %}
+        {% if visiteur.date_inscription %}
+        <p><strong>Inscrit depuis:</strong> {{ visiteur.date_inscription|date:"d/m/Y" }}</p>
+        {% endif %}
+    </div>
+    
+    <div class="module">
+        <h2>Composer le message</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-row">
+                <label for="id_subject">Sujet:</label>
+                <input type="text" id="id_subject" name="subject" class="vTextField" required>
+            </div>
+            
+            <div class="form-row">
+                <label for="id_message">Message:</label>
+                <textarea id="id_message" name="message" rows="10" cols="80" required></textarea>
+                <p class="help">Vous pouvez utiliser le format HTML pour mettre en forme votre message.</p>
+            </div>
+            
+            <div class="submit-row">
+                <input type="submit" value="Envoyer l'email" class="default">
+                <a href="{% url 'admin:api_visiteur_changelist' %}" class="button">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

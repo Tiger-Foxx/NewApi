@@ -7,6 +7,15 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
 from datetime import datetime
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from .authentication import ExpiringTokenAuthentication
+from django.contrib.auth.models import User
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 
 from .models import (
     Profile, Project, Post, Visiteur, Commentaire, 
@@ -302,3 +311,131 @@ def envoyer_email_html(email, sujet, message_html):
     except Exception as e:
         print(f"Erreur lors de l'envoi de l'email HTML à {email}: {e}")
         return False
+    
+
+
+class CustomAuthToken(ObtainAuthToken):
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data,
+                                           context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        
+        # Si le token existe déjà, on le renouvelle
+        if not created:
+            token.created = timezone.now()
+            token.save()
+        
+        return Response({
+            'token': token.key,
+            'user_id': user.pk,
+            'email': user.email,
+            'is_staff': user.is_staff,
+            'is_superuser': user.is_superuser,
+        })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([ExpiringTokenAuthentication])
+def change_password(request):
+    """Permet à un utilisateur authentifié de changer son mot de passe"""
+    user = request.user
+    current_password = request.data.get('current_password')
+    new_password = request.data.get('new_password')
+    
+    if not user.check_password(current_password):
+        return Response({'error': 'Mot de passe actuel incorrect'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    user.set_password(new_password)
+    user.save()
+    
+    return Response({'message': 'Mot de passe changé avec succès'}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([ExpiringTokenAuthentication])
+def get_user_info(request):
+    """Récupère les informations de l'utilisateur connecté"""
+    user = request.user
+    
+    return Response({
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'is_staff': user.is_staff,
+        'is_superuser': user.is_superuser,
+        'date_joined': user.date_joined,
+    })
+
+@api_view(['POST'])
+@csrf_exempt
+def track_visitor(request):
+    """
+    Enregistre une visite sur le site et notifie par email
+    Cette route est publique et peut être appelée par le frontend
+    """
+    # Récupération des données du visiteur
+    ip_address = request.META.get('REMOTE_ADDR', 'Inconnue')
+    user_agent = request.META.get('HTTP_USER_AGENT', 'Inconnu')
+    page_visited = request.data.get('page', '/')
+    referrer = request.data.get('referrer', 'Direct')
+    
+    # Formatage du message
+    message = f"""
+    Nouvelle visite sur votre site Fox !
+    
+    Date et heure : {timezone.now().strftime('%d/%m/%Y %H:%M:%S')}
+    Page visitée : {page_visited}
+    Adresse IP : {ip_address}
+    Navigateur : {user_agent}
+    Référent : {referrer}
+    """
+    
+    # Envoi de l'email de notification
+    send_mail(
+        'Nouvelle visite sur votre site Fox 🦊',
+        message,
+        settings.EMAIL_HOST_USER,
+        ['donfackarthur750@gmail.com'],
+        fail_silently=True
+    )
+    
+    return Response({'status': 'success'}, status=status.HTTP_200_OK)
+
+# Ajouter cette vue aux vues existantes
+@api_view(['GET'])
+def dashboard_stats(request):
+    """
+    Fournit des statistiques pour le tableau de bord du frontend
+    """
+    # Comptages généraux
+    total_projects = Project.objects.count()
+    total_posts = Post.objects.count()
+    total_testimonials = Temoignage.objects.count()
+    
+    # Articles récents
+    recent_posts = Post.objects.order_by('-date')[:3]
+    recent_posts_data = PostSerializer(recent_posts, many=True).data
+    
+    # Projets récents
+    recent_projects = Project.objects.order_by('-date')[:3]
+    recent_projects_data = ProjectSerializer(recent_projects, many=True).data
+    
+    # Témoignages aléatoires
+    testimonials = Temoignage.objects.order_by('?')[:3]
+    testimonials_data = TemoignageSerializer(testimonials, many=True).data
+    
+    # Statistiques globales
+    stats = {
+        'totalProjects': total_projects,
+        'totalPosts': total_posts,
+        'totalTestimonials': total_testimonials,
+        'recentPosts': recent_posts_data,
+        'recentProjects': recent_projects_data,
+        'testimonials': testimonials_data,
+    }
+    
+    return Response(stats)

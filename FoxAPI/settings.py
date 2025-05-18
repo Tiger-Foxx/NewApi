@@ -17,6 +17,7 @@ ALLOWED_HOSTS = ['*', 'theoldfox.pythonanywhere.com', '127.0.0.1']
 INSTALLED_APPS = [
     'api',
     'rest_framework',
+    'rest_framework.authtoken',  # Ajout de l'app d'authentification par token
     'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -100,13 +101,19 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Assure-toi que ton dossier media
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # DRF settings
+# Configuration de DRF
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'api.authentication.ExpiringTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10
 }
+
 
 # CORS settings pour permettre au frontend React d'accéder à l'API
 CORS_ALLOW_ALL_ORIGINS = True  # En développement seulement, à restreindre en production
@@ -118,3 +125,4 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'tigerfox750@gmail.com'
 EMAIL_HOST_PASSWORD = 'rltrfyxinepnqazp'
+TOKEN_EXPIRED_AFTER_SECONDS = 14 * 24 * 60 * 60
