@@ -1,5 +1,7 @@
 from django.db import models
 
+# Version modifiée avec spécification des tables
+
 class Profile(models.Model):
     nom = models.CharField(max_length=328)
     sousTitre = models.TextField()
@@ -19,6 +21,9 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"MON PROFILE | {self.nom.capitalize()}"
+    
+    class Meta:
+        db_table = 'FoxApp_profile'  # Spécifie le nom exact de la table
 
 class Project(models.Model):
     nom = models.CharField(max_length=328)
@@ -33,6 +38,9 @@ class Project(models.Model):
 
     def __str__(self):
         return f"PROJET | {self.nom.capitalize()} | {self.categorie.capitalize()}"
+    
+    class Meta:
+        db_table = 'FoxApp_project'
 
 class Post(models.Model):
     titre = models.CharField(max_length=328)
@@ -51,6 +59,9 @@ class Post(models.Model):
 
     def __str__(self):
         return f"ARTICLE | {self.titre.capitalize()} | {self.date}"
+    
+    class Meta:
+        db_table = 'FoxApp_post'
 
 class Visiteur(models.Model):
     email = models.EmailField(unique=True)
@@ -58,6 +69,9 @@ class Visiteur(models.Model):
     
     def __str__(self):
         return f"VISITEUR | {self.email}"
+    
+    class Meta:
+        db_table = 'FoxApp_visiteur'
 
 class Commentaire(models.Model):
     contenu = models.TextField()
@@ -67,6 +81,9 @@ class Commentaire(models.Model):
 
     def __str__(self):
         return f"COMMENTAIRE SUR | {self.post.titre} le {self.date}"
+    
+    class Meta:
+        db_table = 'FoxApp_commentaire'
 
 class Message(models.Model):
     visiteur = models.ForeignKey(Visiteur, on_delete=models.CASCADE)
@@ -75,6 +92,9 @@ class Message(models.Model):
     
     def __str__(self):
         return f"MESSAGE DE {self.visiteur} : {self.contenu}"
+    
+    class Meta:
+        db_table = 'FoxApp_message'
 
 class Annonce(models.Model):
     date = models.DateField(auto_now_add=True)
@@ -84,6 +104,9 @@ class Annonce(models.Model):
     
     def __str__(self):
         return f"ANNONCE DU | {self.date} : {self.contenuP1}"
+    
+    class Meta:
+        db_table = 'FoxApp_annonce'
 
 class Newsletter(models.Model):
     title = models.CharField(max_length=200)
@@ -97,14 +120,16 @@ class Newsletter(models.Model):
 
     def __str__(self):
         return self.title
+    
+    class Meta:
+        db_table = 'FoxApp_newsletter'
 
-# Nouveaux modèles pour les sections qui étaient en dur dans le HTML
-
+# Nouveaux modèles
 class Timeline(models.Model):
     titre = models.CharField(max_length=200)
     periode = models.CharField(max_length=100)
     description = models.TextField()
-    ordre = models.IntegerField(default=0)  # Pour ordonner les entrées
+    ordre = models.IntegerField(default=0)
     
     def __str__(self):
         return f"TIMELINE | {self.titre} ({self.periode})"
