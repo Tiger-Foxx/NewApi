@@ -1,7 +1,7 @@
 # 🦊 FOX API - Backend Premium pour Portfolio de Développeur & Hacker Éthique
 
 <div align="center">
-  <img src="docs/images/fox-logo.png" alt="Fox API Logo" width="200"/>
+  <img src="https://github.com/Tiger-Foxx/BlueLightFox/raw/main/FoxyBlueLight/Resources/logo.png" alt="Fox API Logo" width="200"/>
   <h3>Arthur Donfack | Développeur & Hacker Éthique</h3>
   <p><em>"Fox, life is easier: The genius at the disposal of all your dreams."</em></p>
 </div>
