@@ -72,7 +72,7 @@ class VisiteurAdmin(FoxBaseAdmin):
         return format_html(
             '<a class="button" href="{}">Envoyer Email</a>&nbsp;'
             '<a class="button" href="{}">Voir Messages</a>',
-            f'/admin/send-direct-email/{obj.id}/',
+            f'mailto:{obj.email}',
             f'/admin/api/message/?visiteur__id__exact={obj.id}'
         )
     actions_buttons.short_description = 'Actions'

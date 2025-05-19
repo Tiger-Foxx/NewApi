@@ -79,7 +79,7 @@ class Commentaire(models.Model):
     contenu = models.TextField()
     visiteur = models.ForeignKey(Visiteur, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return f"COMMENTAIRE SUR | {self.post.titre} le {self.date}"
@@ -91,6 +91,7 @@ class Message(models.Model):
     visiteur = models.ForeignKey(Visiteur, on_delete=models.CASCADE)
     contenu = models.TextField()
     objet = models.CharField(max_length=500, blank=True, null=True)
+    date = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         return f"MESSAGE DE {self.visiteur} : {self.contenu}"

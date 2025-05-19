@@ -19,6 +19,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',  # Ajout de l'app d'authentification par token
     'corsheaders',
+    'django_filters', # Ajouter cette ligne
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -107,11 +109,19 @@ REST_FRAMEWORK = {
         'api.authentication.ExpiringTokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'], # DjangoFilterBackend est ici pour les filtres par champ
+
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.AllowAny',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+    # MODIFICATION ICI:
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    # 'PAGE_SIZE': 22 # PAGE_SIZE est toujours utile comme taille par défaut si limit n'est pas fourni
+                     # ou peut être enlevé si vous voulez toujours spécifier limit.
+                     # Avec LimitOffsetPagination, PAGE_SIZE devient default_limit.
+    # Vous pouvez aussi définir des limites max si vous le souhaitez :
+    # 'DEFAULT_LIMIT': 22, # Nommé 'PAGE_SIZE' dans la doc mais agit comme default_limit
+    # 'MAX_LIMIT': 100, # Pour éviter que les clients demandent trop de données
 }
 
 
@@ -126,3 +136,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'tigerfox750@gmail.com'
 EMAIL_HOST_PASSWORD = 'rltrfyxinepnqazp'
 TOKEN_EXPIRED_AFTER_SECONDS = 14 * 24 * 60 * 60
+
+ADMIN_EMAIL_NOTIFICATIONS = 'donfackarthur750@gmail.com'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
