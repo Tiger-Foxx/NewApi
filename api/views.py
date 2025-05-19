@@ -287,7 +287,7 @@ def send_newsletter(request):
             msg = EmailMultiAlternatives(
                 subject,
                 text_content,
-                settings.EMAIL_HOST_USER,
+                settings.DEFAULT_FROM_EMAIL,
                 [subscriber.email]
             )
             msg.attach_alternative(html_content, "text/html")
@@ -344,7 +344,7 @@ def envoyer_email(email, sujet, message):
         send_mail(
             sujet,
             message,
-            settings.EMAIL_HOST_USER,
+            settings.DEFAULT_FROM_EMAIL,
             [email],
             fail_silently=False,
         )
@@ -360,7 +360,7 @@ def envoyer_email_html(email, sujet, message_html):
         msg = EmailMultiAlternatives(
             sujet,
             text_content,
-            settings.EMAIL_HOST_USER,
+            settings.DEFAULT_FROM_EMAIL,
             [email]
         )
         msg.attach_alternative(message_html, "text/html")
@@ -451,7 +451,7 @@ def track_visitor(request):
     send_mail(
         'Nouvelle visite sur votre site Fox 🦊',
         message,
-        settings.EMAIL_HOST_USER,
+        settings.DEFAULT_FROM_EMAIL,
         ['donfackarthur750@gmail.com'],
         fail_silently=True
     )
