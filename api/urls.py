@@ -9,6 +9,9 @@ router.register(r'projects', views.ProjectViewSet)
 router.register(r'posts', views.PostViewSet)
 router.register(r'timeline', views.TimelineViewSet)
 router.register(r'temoignages', views.TemoignageViewSet)
+router.register(r'newsletters', views.NewsletterViewSet)
+router.register(r'visiteurs', views.VisiteurViewSet)
+
 
 urlpatterns = [
     path('', include(router.urls)),

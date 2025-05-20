@@ -500,3 +500,46 @@ def dashboard_stats(request):
     }
 
     return Response(stats)
+
+
+# Dans views.py
+from .models import Visiteur # ou le nom de votre modèle d'abonné
+from .serializers import VisiteurSerializer # à créer
+from .serializers import NewsletterSerializer # à créer
+from .models import Newsletter
+from rest_framework.decorators import action
+
+
+
+class VisiteurViewSet(viewsets.ReadOnlyModelViewSet): # ReadOnly si vous ne gérez pas la création/modif ici
+    queryset = Visiteur.objects.all().order_by('-date_inscription') # ou le champ de date pertinent
+    serializer_class = VisiteurSerializer
+    permission_classes = [permissions.AllowAny]
+    
+
+
+class NewsletterViewSet(viewsets.ReadOnlyModelViewSet): # ReadOnly pour lister, la création se fait via send_newsletter
+    queryset = Newsletter.objects.all().order_by('-created_at')
+    serializer_class = NewsletterSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @action(detail=True, methods=['get'])
+    def preview(self, request, pk=None):
+        newsletter = self.get_object()
+        # Logique pour rendre le template HTML de la newsletter
+        # avec les données de 'newsletter'
+        # Retourner une HttpResponse avec content_type='text/html'
+        # Exemple simple :
+        # html_content = f"<h1>{newsletter.title}</h1><p>{newsletter.main_content}</p>"
+        # return HttpResponse(html_content)
+        
+        # Idéalement, utilisez render_to_string avec votre template d'email
+        profile = Profile.objects.first() # Assurez-vous que Profile est importé
+        context = {
+            'newsletter': newsletter,
+            'year': datetime.now().year, # Assurez-vous que datetime est importé
+            'profile': profile,
+        }
+        html_content = render_to_string('email/newsletter_template.html', context) # Assurez-vous que le template existe
+        return HttpResponse(html_content)
+    

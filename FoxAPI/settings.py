@@ -8,9 +8,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-g*3q_vkqd-4wv8c^!ln22os*bdiv^+z(l7wjg*_$9f*r0lyblp'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*', 'theoldfox.pythonanywhere.com', '127.0.0.1','apifox.pythonanywhere.com']
+ALLOWED_HOSTS = ['*', 'theoldfox.pythonanywhere.com', '127.0.0.1','foxnumerique.pythonanywhere.com']
 
 # Application definition
 
