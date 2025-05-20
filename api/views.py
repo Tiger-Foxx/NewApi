@@ -181,34 +181,48 @@ def subscribe(request):
         return Response({'message': message}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
 def add_comment(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    email = request.data.get('email')
-    nom = request.data.get('nom', '')
-    contenu = request.data.get('contenu')
+    
+    if request.method == 'GET':
+        # Récupérer les commentaires pour ce post
+        commentaires = Commentaire.objects.filter(post=post).order_by('-date')
+        
+        # Enrichir les données avec le nom et l'email du visiteur
+        for comment in commentaires:
+            comment.visiteur_nom = comment.visiteur.nom
+            comment.visiteur_email = comment.visiteur.email
+        
+        serializer = CommentaireSerializer(commentaires, many=True)
+        return Response({'results': serializer.data, 'count': commentaires.count()})
+    
+    elif request.method == 'POST':
+        email = request.data.get('email')
+        nom = request.data.get('nom', '')
+        contenu = request.data.get('contenu')
 
-    if not email or not contenu:
-        return Response(
-            {'error': 'Email et contenu sont requis'},
-            status=status.HTTP_400_BAD_REQUEST
+        if not email or not contenu:
+            return Response(
+                {'error': 'Email et contenu sont requis'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        visiteur, created = Visiteur.objects.get_or_create(
+            email=email,
+            defaults={'nom': nom}
         )
+        if not created and nom:
+            visiteur.nom = nom
+            visiteur.save()
 
-    visiteur, created = Visiteur.objects.get_or_create(
-        email=email,
-        defaults={'nom': nom}
-    )
-    if not created and nom:
-        visiteur.nom = nom
-        visiteur.save()
-
-    commentaire = Commentaire.objects.create(
-        visiteur=visiteur,
-        post=post,
-        contenu=contenu
-    )
-    serializer = CommentaireSerializer(commentaire)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+        commentaire = Commentaire.objects.create(
+            visiteur=visiteur,
+            post=post,
+            contenu=contenu
+        )
+        serializer = CommentaireSerializer(commentaire)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 @api_view(['POST'])
 def send_message(request):
@@ -238,7 +252,7 @@ def send_message(request):
     )
     envoyer_email(
         message=contenu,
-        sujet=f'NOUVEAU MESSAGE SUR LE SITE FOX: {objet}',
+        sujet=f'NOUVEAU MESSAGE SUR LE SITE FOX !\nOBJET : {objet}\nDE LA PART DE: {visiteur.email}\n',
         email='donfackarthur750@gmail.com'
     )
     return Response(
