@@ -10,7 +10,7 @@ SECRET_KEY = 'django-insecure-g*3q_vkqd-4wv8c^!ln22os*bdiv^+z(l7wjg*_$9f*r0lyblp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*', 'theoldfox.pythonanywhere.com', '127.0.0.1']
+ALLOWED_HOSTS = ['*', 'theoldfox.pythonanywhere.com', '127.0.0.1','apifox.pythonanywhere.com']
 
 # Application definition
 
